@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Find The Escape</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      background-color: black;
+      color: white;
+      position: relative;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 100vw;
+      background-color: black;
+      pointer-events: none;
+      z-index: 99;
+      mask-image: radial-gradient(circle 25px at center, transparent 0%, black 100%);
+      -webkit-mask-image: radial-gradient(circle 25px at center, transparent 0%, black 100%);
+      transition: mask-image 0.1s, -webkit-mask-image 0.1s;
+    }
+
+    h1.title {
+      position: absolute;
+      top: 20px;
+      width: 100%;
+      text-align: center;
+      font-size: 32px;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .confusion-text {
+      position: absolute;
+      color: white;
+      z-index: 5;
+      pointer-events: none;
+      font-size: 16px;
+      opacity: 0.8;
+    }
+
+    .hidden-button {
+      position: absolute;
+      background: white;
+      color: black;
+      padding: 10px 20px;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .hidden-button.show {
+      opacity: 1;
+    }
+
+    .fake-button {
+      position: absolute;
+      background: gray;
+      color: white;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    .final-buttons {
+      display: none;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 50px;
+      gap: 5px;
+      z-index: 1;
+      max-height: 100vh;
+      overflow-y: scroll;
+    }
+
+    .final-buttons button {
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      background: #efeff6;
+      color: black;
+    }
+
+    .final-buttons button.real-final {
+      background: #E6E6ED;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="overlay" id="overlay"></div>
+
+  <h1 class="title">Find the Escape</h1>
+
+  <!-- Confusing messages -->
+  <div class="confusion-text" id="text1">You won't make it.</div>
+  <div class="confusion-text" id="text2">Everything is a trap.</div>
+  <div class="confusion-text" id="text3">There’s no escape.</div>
+  <div class="confusion-text" id="text4">Keep looking...</div>
+  <div class="confusion-text" id="text5">Wrong again.</div>
+  <div class="confusion-text" id="text6">Almost there? Nah.</div>
+
+  <!-- Fake Buttons (7 total) -->
+  <button class="fake-button" id="btn1">Click Me</button>
+  <button class="fake-button" id="btn2">Escape?</button>
+  <button class="fake-button" id="btn3">White Mode</button>
+  <button class="fake-button" id="btn4">Real?</button>
+  <button class="fake-button" id="btn5">Don't Press</button>
+  <button class="fake-button" id="btn6">Try Me</button>
+  <button class="fake-button" id="btn7">Exit</button>
+
+  <!-- Real Button (Stage 1) -->
+  <button class="hidden-button" id="lightBtn">White Mode</button>
+
+  <!-- Final Buttons (Stage 2) -->
+  <div class="final-buttons" id="finalButtons"></div>
+
+  <script>
+    const overlay = document.getElementById("overlay");
+    const lightBtn = document.getElementById("lightBtn");
+    const fakeButtons = document.querySelectorAll(".fake-button");
+    const confusionTexts = document.querySelectorAll(".confusion-text");
+    const finalButtonsContainer = document.getElementById("finalButtons");
+
+    // Shuffle positions for the elements
+    function shufflePositions() {
+      const shuffle = (arr) => arr.sort(() => Math.random() - 0.5);
+      
+      // Shuffle confusion texts
+      shuffle([...confusionTexts]).forEach((text, index) => {
+        const randomTop = Math.floor(Math.random() * 90) + "%";
+        const randomLeft = Math.floor(Math.random() * 90) + "%";
+        text.style.top = randomTop;
+        text.style.left = randomLeft;
+      });
+
+      // Shuffle fake buttons
+      shuffle([...fakeButtons]).forEach((btn) => {
+        const randomTop = Math.floor(Math.random() * 90) + "%";
+        const randomLeft = Math.floor(Math.random() * 90) + "%";
+        btn.style.top = randomTop;
+        btn.style.left = randomLeft;
+      });
+
+      // Shuffle white mode button
+      const randomTop = Math.floor(Math.random() * 90) + "%";
+      const randomLeft = Math.floor(Math.random() * 90) + "%";
+      lightBtn.style.top = randomTop;
+      lightBtn.style.left = randomLeft;
+    }
+
+    // Torchlight movement
+    document.addEventListener("mousemove", (e) => {
+      const x = e.clientX;
+      const y = e.clientY;
+      overlay.style.maskImage = `radial-gradient(circle 69px at ${x}px ${y}px, transparent 0%, black 100%)`;
+      overlay.style.webkitMaskImage = `radial-gradient(circle 69px at ${x}px ${y}px, transparent 0%, black 100%)`;
+
+      // Reveal real button when hovering
+      const btnRect = lightBtn.getBoundingClientRect();
+      if (
+        x > btnRect.left && x < btnRect.right &&
+        y > btnRect.top && y < btnRect.bottom
+      ) {
+        lightBtn.classList.add("show");
+      }
+    });
+
+    // Fake buttons trigger
+    fakeButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        alert("Woops, wrong mf 😈");
+      });
+    });
+
+    // Stage 1 -> Stage 2
+    lightBtn.addEventListener("click", () => {
+      document.body.style.backgroundColor = "white";
+      document.body.style.color = "black";
+      overlay.style.display = "none";
+      lightBtn.style.display = "none";
+      fakeButtons.forEach(btn => btn.style.display = "none");
+
+      // Spawn final stage buttons
+      finalButtonsContainer.style.display = "flex";
+      for (let i = 0; i < 200; i++) {
+        const finalBtn = document.createElement("button");
+        finalBtn.textContent = "Click Me";
+        finalButtonsContainer.appendChild(finalBtn);
+      }
+
+      // Pick a random final button to be the real one
+      const totalButtons = 200;
+      const realIndex = Math.floor(Math.random() * totalButtons);
+
+      for (let i = 0; i < totalButtons; i++) {
+        const finalBtn = document.createElement("button");
+        finalBtn.textContent = i === realIndex ? "click me" : "Click Me";
+        finalBtn.className = i === realIndex ? "real-final" : "";
+        
+        finalBtn.addEventListener("click", () => {
+          if (i === realIndex) {
+            window.location.href = "win.html";
+          } else {
+            alert("NOPE. TRY AGAIN 😬");
+          }
+        });
+
+        finalButtonsContainer.appendChild(finalBtn);
+      }
+    });
+
+    // Call shuffle on page load
+    window.onload = shufflePositions;
+  </script>
+</body>
+</html>
